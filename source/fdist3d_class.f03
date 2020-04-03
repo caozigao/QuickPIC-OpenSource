@@ -121,7 +121,7 @@
          private
 
          integer :: npt
-         real :: bcx, bcy, bcz, dx, dy, dz, cwp
+         real :: bcx, bcy, bcz, dx, dy, dz, cwp, qm
          character(len=:), allocatable :: file !文件名
 
          contains
@@ -221,7 +221,7 @@
          call this%err%werrfl2(class//sname//' started')
 
          write (sn,'(I3.3)') i
-         s1 = 'beam('//trim(sn)//')' ！几个beam
+         s1 = 'beam('//trim(sn)//')' !！几个beam
 
          call input%get('simulation.n0',n0)
          call input%get('simulation.indx',indx)
@@ -737,7 +737,7 @@
          integer, intent(in) :: i
 ! local data
          integer :: npt, npmax, npf
-         real :: bcx, bcy, bcz
+         real :: bcx, bcy, bcz, tc, qm
          logical :: evol
          real :: min, max, cwp, n0
          real :: alx, aly, alz, dx, dy, dz
@@ -785,6 +785,9 @@
          call input%get(trim(s1)//'.npmax',npmax)!与并行核有关，动态分配内存会产生内存碎片，程序运算很慢/一开始内存取好，尽量去大一点
          call input%get(trim(s1)//'.evolution',evol)!beam shape等不变，粒子不变
          call input%get(trim(s1)//'.file_name',this%file)
+         call input%get(trim(s1)//'.total_particle_num',tc)
+         call input%get(trim(s1)//'.q',qm)
+
 
          this%npf = npf
          this%npt = npt
@@ -796,6 +799,7 @@
          this%dy = dy
          this%dz = dz
          this%evol = evol
+         this%qm = qm*abs(tc)*(1.0e12)/(cwp**3)/n0/dx/dy/dz/npt
 
          call this%err%werrfl2(class//sname//' ended')
 
@@ -817,7 +821,7 @@
 ! edges(4) = upper boundary in z of particle partition
          real, dimension(:,:), pointer :: part
          integer :: npt, nx, ny, nz, ipbc, i !npt? ipbc?
-         real :: x0, y0, z0, dx, dy, dz, cwp !c/wp;xyz[um];vxvyvz[gamma*v/c]
+         real :: x0, y0, z0, dx, dy, dz, cwp, qm !c/wp;xyz[um];vxvyvz[gamma*v/c]
          real, dimension(4) :: edges
          integer, dimension(2) :: noff !?
          integer :: nps !?
@@ -835,6 +839,7 @@
          part => part3d 
          x0 = this%bcx; y0 = this%bcy; z0 = this%bcz !beam center/box center?
          dx = this%dx; dy = this%dy; dz = this%dz; cwp = this%cwp
+         qm = this%qm
          idimp = size(part3d,1); npmax = size(part3d,2)
          noff = fd%getnoff()
          edges(1) = noff(1); edges(3) = noff(2)
@@ -849,7 +854,7 @@
             
             tempx = tempx/cwp/dx + x0
             tempy = tempy/cwp/dy + y0
-            tempz = -tempz/cwp/dz !z=ct-z
+            tempz = -tempz/cwp/dz + z0 !z=ct-z
 
             if ((tempx>=1) .and. tempx<=(nx-1) .and. (tempy >= edges(1))& !是用来判断粒子是否属于当前这个分区的。
             & .and. (tempy < edges(2)) .and. (tempz >= edges(3)) .and. (t& !因为是并行程序，每个核负责空间里面的一块儿
@@ -860,7 +865,7 @@
               part(5,nps) = tempvy
               part(3,nps) = tempz
               part(6,nps) = tempvz
-              part(7,nps) = tempq
+              part(7,nps) = tempq*qm
               nps = nps + 1
               cycle
             endif     

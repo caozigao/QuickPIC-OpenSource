@@ -1,0 +1,98 @@
+{
+"simulation" : !note
+{
+    "nodes" : [32,1], 
+    "indx" : 8,
+    "indy" : 8,
+    "indz" : 8,
+    "box" : {
+        "x" : [-7.0,7.0],
+        "y" : [-7.0,7.0],
+        "z" : [0.0,15.0]},
+    "boundary" : "conducting",
+    "n0" : 1.0e15,
+    "time" : 10.1,
+    "dt" : 10.0,
+    "nbeams" : 1,
+    "nspecies" : 1,
+    "dump_restart" : false,
+    "ndump_restart" : 1,
+    "read_restart" : false,
+    "restart_timestep" : 1,
+    "iter" : 1,
+    "verbose" : 0
+},
+
+"beam" :
+[
+    {
+    "evolution" : false,
+    "profile" : 3,
+    "np" : 133332,
+    "npmax" : 200000,
+    "q" : -1.0,
+    "m" : 1.0,
+    "center" : [0.0,0.0,0.0],
+    "file_name" : "PWFA_LIANC_OUT(1).dat",
+    "total_particle_num" : 1.0e10,
+    "diag" :
+    [
+        {
+        "name" : ["charge"],
+        "ndump" : 1
+        },
+        {
+        "name" : ["charge"],
+        "ndump" : 1,
+        "slice" : [["xz", 129],["yz",129],["xy",20]]
+        },
+        {
+        "name" : ["raw"],
+        "ndump" : 1,
+        "sample" : 1
+        }
+    ]    
+    }
+],
+
+"species" :
+[
+    {
+    "profile" : 0,
+    "ppc" : [2,2],
+    "q" : -1.0,
+    "m" : 100000000.0,
+    "density" : 0.0,
+    "longitudinal_profile" : "uniform",
+    "diag" :
+    [
+        {
+        "name" : ["charge", "jx"],
+        "ndump" : 0
+        },
+        {
+        "name" : ["jx", "jy", "jz"],
+        "ndump" : 0,
+        "slice" : [["xz", 129],["yz",129]]
+        }
+    ]    
+    }
+],
+
+"field" :
+{
+    "diag" :
+    [
+        {
+        "name" : ["ex","ez"],
+        "ndump" : 0
+        },
+        {
+        "name" : ["ex","by","ez","psi"],
+        "ndump" : 0,
+        "slice" : [["xz", 129],["yz", 129]]
+        }
+    ]    
+    
+}
+}
